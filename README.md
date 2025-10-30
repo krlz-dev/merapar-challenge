@@ -22,113 +22,83 @@ Create a simple yet powerful demonstration of real-time communication between cl
 
 ## 🏗️ Architecture Overview
 
-```plantuml
-@startuml AWS Architecture
-!include <awslib/AWSCommon>
-!include <awslib/InternetOfThings/IoTGreengrassConnector>
-!include <awslib/NetworkingContentDelivery/CloudFront>
-!include <awslib/NetworkingContentDelivery/ElasticLoadBalancing>
-!include <awslib/Compute/ECS>
-!include <awslib/Compute/ECR>
-!include <awslib/NetworkingContentDelivery/VPC>
-
-title AWS Infrastructure Architecture
-
-actor User
-CloudFront(cdn, "CloudFront CDN", "Global Distribution")
-ElasticLoadBalancing(alb, "Application\nLoad Balancer", "Traffic Distribution")
-VPC(vpc, "VPC", "Private Network") {
-  ECS(ecs, "ECS Fargate", "Container Runtime")
-  ECR(ecr, "ECR Repository", "Docker Images")
-}
-
-User --> cdn : HTTPS Requests
-cdn --> alb : Origin Requests
-alb --> ecs : Load Balanced
-ecs --> ecr : Pull Images
-
-note right of cdn
-  - Global CDN caching
-  - HTTPS termination
-  - DDoS protection
-end note
-
-note right of ecs
-  - Serverless containers
-  - Auto-scaling
-  - SSE persistent connections
-end note
-
-note bottom
-  **Cost Considerations for SSE:**
-  - ECS Fargate: $0.04048/vCPU/hour + $0.004445/GB/hour
-  - Load Balancer: $0.0225/hour + $0.008/LCU-hour
-  - CloudFront: $0.085/GB + $0.0075/10k requests
-  - **SSE Impact**: Persistent connections increase LCU usage
-  - **Estimated Monthly Cost**: $30-60 for moderate traffic
-end note
-
-@enduml
+```mermaid
+graph TB
+    User[👤 User] --> CDN[☁️ CloudFront CDN<br/>Global Distribution]
+    CDN --> ALB[⚖️ Application Load Balancer<br/>Traffic Distribution]
+    
+    subgraph VPC [🔒 VPC - Private Network]
+        ALB --> ECS[🐳 ECS Fargate<br/>Container Runtime]
+        ECS -.-> ECR[📦 ECR Repository<br/>Docker Images]
+    end
+    
+    %% Annotations
+    CDN -.- CDN_NOTE[📝 Global CDN caching<br/>HTTPS termination<br/>DDoS protection]
+    ECS -.- ECS_NOTE[📝 Serverless containers<br/>Auto-scaling<br/>SSE persistent connections]
+    
+    %% Cost analysis box
+    subgraph COST [💰 Cost Considerations for SSE]
+        direction TB
+        COST1[ECS Fargate: $0.04048/vCPU/hour + $0.004445/GB/hour]
+        COST2[Load Balancer: $0.0225/hour + $0.008/LCU-hour]
+        COST3[CloudFront: $0.085/GB + $0.0075/10k requests]
+        COST4[⚠️ SSE Impact: Persistent connections increase LCU usage]
+        COST5[📊 Estimated Monthly Cost: $30-60 for moderate traffic]
+    end
+    
+    style CDN fill:#e1f5fe
+    style ALB fill:#f3e5f5
+    style ECS fill:#e8f5e8
+    style ECR fill:#fff3e0
+    style VPC fill:#f5f5f5,stroke:#666,stroke-dasharray: 5 5
+    style COST fill:#ffebee
 ```
 
 ## 🔄 Application Flow
 
-```plantuml
-@startuml Sequence Diagram
-title Real-time Text Update Flow
+```mermaid
+sequenceDiagram
+    participant U as 👤 User
+    participant M as 🌐 Main Page<br/>(index.astro)
+    participant A as ⚙️ Admin Page<br/>(admin.astro)
+    participant S as 📡 SSE Endpoint<br/>(/events)
+    participant API as 🔄 Update API<br/>(/update/text)
+    participant FS as 💾 File System<br/>(text.json)
 
-actor User
-participant "Main Page\n(index.astro)" as Main
-participant "Admin Page\n(admin.astro)" as Admin
-participant "SSE Endpoint\n(/events)" as SSE
-participant "Update API\n(/update/text)" as API
-participant "File System\n(text.json)" as FS
+    Note over U,FS: 🚀 Initial Load
+    U->>M: Visit main page
+    M->>FS: Read text.json
+    FS->>M: Return current text
+    M->>U: Display text + start SSE
+    
+    M->>S: Connect to /events
+    S->>FS: Read current text
+    S->>M: Send current text via SSE
+    
+    rect rgb(240, 248, 255)
+        Note over S: 🔗 Keep connection alive
+    end
 
-== Initial Load ==
-User -> Main: Visit main page
-Main -> FS: Read text.json
-FS -> Main: Return current text
-Main -> User: Display text + start SSE
+    Note over U,FS: 👨‍💻 Admin Update
+    U->>A: Visit admin page
+    A->>S: Connect to /events (for live preview)
+    S->>A: Send current text
+    
+    U->>A: Submit new text
+    A->>API: POST /update/text {"text": "new value"}
+    API->>FS: Write to text.json
+    API->>S: broadcastUpdate("new value")
+    API->>A: Return success
 
-Main -> SSE: Connect to /events
-SSE -> FS: Read current text
-SSE -> Main: Send current text via SSE
-SSE -> Main: Keep connection alive
+    Note over U,FS: ⚡ Real-time Broadcast
+    S->>M: Send updated text (SSE message)
+    S->>A: Send updated text (SSE message)
+    M->>U: Update DOM without refresh
+    A->>U: Update preview without refresh
 
-== Admin Update ==
-User -> Admin: Visit admin page
-Admin -> SSE: Connect to /events (for live preview)
-SSE -> Admin: Send current text
-
-User -> Admin: Submit new text
-Admin -> API: POST /update/text {text: "new value"}
-API -> FS: Write to text.json
-API -> SSE: broadcastUpdate("new value")
-API -> Admin: Return success
-
-== Real-time Broadcast ==
-SSE -> Main: Send updated text (SSE message)
-SSE -> Admin: Send updated text (SSE message)
-Main -> User: Update DOM without refresh
-Admin -> User: Update preview without refresh
-
-note over SSE
-  **Server-Sent Events**
-  - Persistent HTTP connections
-  - One-way server→client communication
-  - Automatic reconnection on failure
-  - Lower latency than polling
-end note
-
-note over API
-  **RESTful Update**
-  - JSON payload
-  - Immediate persistence
-  - Broadcast to all clients
-  - Error handling
-end note
-
-@enduml
+    Note over S: 📡 Server-Sent Events<br/>• Persistent HTTP connections<br/>• One-way server→client communication<br/>• Automatic reconnection on failure<br/>• Lower latency than polling
+    
+    Note over API: 🔄 RESTful Update<br/>• JSON payload<br/>• Immediate persistence<br/>• Broadcast to all clients<br/>• Error handling
 ```
 
 ## 🚀 Live Demo
