@@ -36,8 +36,6 @@ export const POST: APIRoute = async ({ request }) => {
     const data = { dynamicString: text };
     
     fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-    
-    // Broadcast update to all connected SSE clients
     broadcastUpdate(text);
 
     return new Response(JSON.stringify({ success: true, message: 'Text updated successfully' }), {

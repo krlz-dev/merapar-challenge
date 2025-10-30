@@ -4,7 +4,6 @@ import path from 'path';
 
 const clients = new Set<WritableStreamDefaultWriter>();
 
-// Function to broadcast updates to all connected clients
 export function broadcastUpdate(data: string) {
   const message = `data: ${JSON.stringify({ dynamicString: data })}\n\n`;
   
@@ -22,15 +21,10 @@ export const GET: APIRoute = async () => {
   const stream = new ReadableStream({
     start(controller) {
       const writer = controller;
-      
-      // Add client to the set
       const encoder = new TextEncoder();
-      
-      // Send initial connection message
       const initialMessage = `data: ${JSON.stringify({ type: 'connected' })}\n\n`;
       controller.enqueue(encoder.encode(initialMessage));
-      
-      // Send current text value
+
       try {
         const dataPath = path.join(process.cwd(), 'src/data/text.json');
         const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
@@ -39,8 +33,7 @@ export const GET: APIRoute = async () => {
       } catch (error) {
         console.error('Error reading initial text:', error);
       }
-      
-      // Create a custom writer that wraps the controller
+
       const customWriter = {
         write: async (chunk: Uint8Array) => {
           try {
@@ -53,18 +46,14 @@ export const GET: APIRoute = async () => {
       } as WritableStreamDefaultWriter;
       
       clients.add(customWriter);
-      
-      // Handle cleanup when client disconnects
       const cleanup = () => {
         clients.delete(customWriter);
       };
-      
-      // Store cleanup function for later use
+
       (customWriter as any).cleanup = cleanup;
     },
     
     cancel() {
-      // Client disconnected, clean up
       console.log('SSE client disconnected');
     }
   });
