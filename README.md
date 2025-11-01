@@ -23,21 +23,14 @@ Create a simple yet powerful demonstration of real-time communication between cl
 ## 🏗️ Infrastructure Architecture
 
 ```mermaid
-architecture-beta
-    group aws(logo:aws)[AWS Cloud]
+graph TB
+    User[👤 User] --> CF[☁️ CloudFront CDN]
+    CF --> ALB[⚖️ Application Load Balancer]
     
-    service user(internet)[User] in aws
-    service cf(aws-cloudfront)[CloudFront CDN] in aws
-    service alb(aws-application-load-balancer)[Application Load Balancer] in aws
-    
-    group vpc(aws-vpc)[VPC - Private Network] in aws
-    service ecs(aws-ecs)[ECS Fargate] in vpc
-    service ecr(aws-ecr)[ECR Repository] in vpc
-    
-    user:R --> cf:L
-    cf:R --> alb:L
-    alb:R --> ecs:L
-    ecs:T --> ecr:B
+    subgraph VPC [🔒 VPC - Private Network]
+        ALB --> ECS[🐳 ECS Fargate]
+        ECS -.-> ECR[📦 ECR Repository]
+    end
 ```
 
 ## 🔧 Application Architecture
