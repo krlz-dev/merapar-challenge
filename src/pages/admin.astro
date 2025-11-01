@@ -131,7 +131,7 @@ try {
 			const currentTextElement = document.getElementById('currentText');
 			
 			function connectSSE() {
-				eventSource = new EventSource('/events');
+				eventSource = new EventSource('/api/events');
 				
 				eventSource.onopen = function() {
 					connectionStatus.textContent = 'Connected';

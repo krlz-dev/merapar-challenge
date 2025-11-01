@@ -1,30 +1,18 @@
 import type { APIRoute } from 'astro';
 import fs from 'fs';
 import path from 'path';
-
-const clients = new Set<WritableStreamDefaultWriter>();
-
-export function broadcastUpdate(data: string) {
-  const message = `data: ${JSON.stringify({ dynamicString: data })}\n\n`;
-  
-  clients.forEach(async (writer) => {
-    try {
-      await writer.write(new TextEncoder().encode(message));
-    } catch (error) {
-      console.error('Error writing to SSE client:', error);
-      clients.delete(writer);
-    }
-  });
-}
+import { sseService } from '../../services/sse-service.js';
 
 export const GET: APIRoute = async () => {
   const stream = new ReadableStream({
     start(controller) {
-      const writer = controller;
       const encoder = new TextEncoder();
+      
+      // Send initial connection message
       const initialMessage = `data: ${JSON.stringify({ type: 'connected' })}\n\n`;
       controller.enqueue(encoder.encode(initialMessage));
 
+      // Send current text data
       try {
         const dataPath = path.join(process.cwd(), 'src/data/text.json');
         const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
@@ -34,27 +22,15 @@ export const GET: APIRoute = async () => {
         console.error('Error reading initial text:', error);
       }
 
-      const customWriter = {
-        write: async (chunk: Uint8Array) => {
-          try {
-            controller.enqueue(chunk);
-          } catch (error) {
-            console.error('Error writing to stream:', error);
-            clients.delete(customWriter as any);
-          }
-        }
-      } as WritableStreamDefaultWriter;
+      // Register client with SSE service
+      const client = sseService.addClient(controller);
       
-      clients.add(customWriter);
-      const cleanup = () => {
-        clients.delete(customWriter);
-      };
-
-      (customWriter as any).cleanup = cleanup;
+      return client;
     },
     
     cancel() {
-      console.log('SSE client disconnected');
+      console.log('SSE stream cancelled');
+      // Client cleanup is handled automatically by the service
     }
   });
 
@@ -68,3 +44,4 @@ export const GET: APIRoute = async () => {
     },
   });
 };
+

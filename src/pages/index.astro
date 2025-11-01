@@ -49,7 +49,7 @@ try {
 			const dynamicTextElement = document.getElementById('dynamicText');
 			
 			function connectSSE() {
-				eventSource = new EventSource('/events');
+				eventSource = new EventSource('/api/events');
 				
 				eventSource.onmessage = function(event) {
 					try {

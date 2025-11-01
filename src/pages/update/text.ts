@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import fs from 'fs';
 import path from 'path';
-import { broadcastUpdate } from '../events.js';
+import { broadcastUpdate } from '../../services/sse-service.js';
 
 export const POST: APIRoute = async ({ request }) => {
   try {

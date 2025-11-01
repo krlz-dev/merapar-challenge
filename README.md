@@ -20,38 +20,62 @@ Create a simple yet powerful demonstration of real-time communication between cl
 - **Responsive Design**: Bootstrap-based responsive UI
 - **Cloud Deployment**: Fully containerized and deployed on AWS
 
-## 🏗️ Architecture Overview
+## 🏗️ Infrastructure Architecture
+
+```mermaid
+architecture-beta
+    group aws(logo:aws)[AWS Cloud]
+    
+    service user(internet)[User] in aws
+    service cf(aws-cloudfront)[CloudFront CDN] in aws
+    service alb(aws-application-load-balancer)[Application Load Balancer] in aws
+    
+    group vpc(aws-vpc)[VPC - Private Network] in aws
+    service ecs(aws-ecs)[ECS Fargate] in vpc
+    service ecr(aws-ecr)[ECR Repository] in vpc
+    
+    user:R --> cf:L
+    cf:R --> alb:L
+    alb:R --> ecs:L
+    ecs:T --> ecr:B
+```
+
+## 🔧 Application Architecture
 
 ```mermaid
 graph TB
-    User[👤 User] --> CDN[☁️ CloudFront CDN<br/>Global Distribution]
-    CDN --> ALB[⚖️ Application Load Balancer<br/>Traffic Distribution]
-    
-    subgraph VPC [🔒 VPC - Private Network]
-        ALB --> ECS[🐳 ECS Fargate<br/>Container Runtime]
-        ECS -.-> ECR[📦 ECR Repository<br/>Docker Images]
+    subgraph Client [Client Side]
+        MainPage[📄 Main Page<br/>SSE Connection]
+        Demo2[📄 Demo2 Page<br/>Polling Connection]
+        AdminPage[📄 Admin Page<br/>SSE + Updates]
     end
     
-    %% Annotations
-    CDN -.- CDN_NOTE[📝 Global CDN caching<br/>HTTPS termination<br/>DDoS protection]
-    ECS -.- ECS_NOTE[📝 Serverless containers<br/>Auto-scaling<br/>SSE persistent connections]
-    
-    %% Cost analysis box
-    subgraph COST [💰 Cost Considerations for SSE]
-        direction TB
-        COST1[ECS Fargate: $0.04048/vCPU/hour + $0.004445/GB/hour]
-        COST2[Load Balancer: $0.0225/hour + $0.008/LCU-hour]
-        COST3[CloudFront: $0.085/GB + $0.0075/10k requests]
-        COST4[⚠️ SSE Impact: Persistent connections increase LCU usage]
-        COST5[📊 Estimated Monthly Cost: $30-60 for moderate traffic]
+    subgraph Server [Server Side]
+        subgraph API [API Layer]
+            EventsAPI[📡 /api/events<br/>SSE Endpoint]
+            TextAPI[📋 /api/text<br/>JSON Endpoint]
+            UpdateAPI[🔄 /update/text<br/>Update Endpoint]
+        end
+        
+        subgraph Service [Service Layer]
+            SSEService[🔧 SSE Service<br/>Client Management<br/>Broadcasting]
+        end
+        
+        subgraph Storage [Storage Layer]
+            TextJSON[💾 text.json<br/>Persistent Data]
+        end
     end
     
-    style CDN fill:#e1f5fe
-    style ALB fill:#f3e5f5
-    style ECS fill:#e8f5e8
-    style ECR fill:#fff3e0
-    style VPC fill:#f5f5f5,stroke:#666,stroke-dasharray: 5 5
-    style COST fill:#ffebee
+    MainPage --> EventsAPI
+    Demo2 --> TextAPI
+    AdminPage --> EventsAPI
+    AdminPage --> UpdateAPI
+    
+    EventsAPI --> SSEService
+    UpdateAPI --> SSEService
+    UpdateAPI --> TextJSON
+    TextAPI --> TextJSON
+    EventsAPI --> TextJSON
 ```
 
 ## 🔄 Application Flow
@@ -59,46 +83,37 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant U as 👤 User
-    participant M as 🌐 Main Page<br/>(index.astro)
-    participant A as ⚙️ Admin Page<br/>(admin.astro)
-    participant S as 📡 SSE Endpoint<br/>(/events)
-    participant API as 🔄 Update API<br/>(/update/text)
-    participant FS as 💾 File System<br/>(text.json)
+    participant M as 🌐 Main Page
+    participant A as ⚙️ Admin Page
+    participant API as 📡 API Layer
+    participant SVC as 🔧 SSE Service
+    participant FS as 💾 text.json
 
     Note over U,FS: 🚀 Initial Load
     U->>M: Visit main page
-    M->>FS: Read text.json
-    FS->>M: Return current text
-    M->>U: Display text + start SSE
+    M->>API: GET /api/events (SSE)
+    API->>FS: Read current text
+    API->>SVC: Register client
+    SVC->>M: Send current text
     
-    M->>S: Connect to /events
-    S->>FS: Read current text
-    S->>M: Send current text via SSE
-    
-    rect rgb(240, 248, 255)
-        Note over S: 🔗 Keep connection alive
-    end
+    Note over SVC: 🔗 Keep SSE connection alive
 
     Note over U,FS: 👨‍💻 Admin Update
     U->>A: Visit admin page
-    A->>S: Connect to /events (for live preview)
-    S->>A: Send current text
+    A->>API: GET /api/events (SSE)
+    API->>SVC: Register client
+    SVC->>A: Send current text
     
     U->>A: Submit new text
-    A->>API: POST /update/text {"text": "new value"}
+    A->>API: POST /update/text
     API->>FS: Write to text.json
-    API->>S: broadcastUpdate("new value")
-    API->>A: Return success
-
-    Note over U,FS: ⚡ Real-time Broadcast
-    S->>M: Send updated text (SSE message)
-    S->>A: Send updated text (SSE message)
-    M->>U: Update DOM without refresh
-    A->>U: Update preview without refresh
-
-    Note over S: 📡 Server-Sent Events<br/>• Persistent HTTP connections<br/>• One-way server→client communication<br/>• Automatic reconnection on failure<br/>• Lower latency than polling
+    API->>SVC: broadcastUpdate()
     
-    Note over API: 🔄 RESTful Update<br/>• JSON payload<br/>• Immediate persistence<br/>• Broadcast to all clients<br/>• Error handling
+    Note over U,FS: ⚡ Real-time Broadcast
+    SVC->>M: Send updated text
+    SVC->>A: Send updated text
+    M->>U: Update DOM
+    A->>U: Update preview
 ```
 
 ## 🚀 Live Demo
@@ -106,8 +121,58 @@ sequenceDiagram
 **Application URL**: https://d1jk0h2l40omp5.cloudfront.net
 
 ### Pages:
-- **Main Page** (`/`): Displays the dynamic text with real-time updates
+- **Main Page** (`/`): Displays the dynamic text with real-time updates using SSE
+- **Demo2 Page** (`/demo2`): Simple polling approach (updates every 3 seconds)
 - **Admin Page** (`/admin`): Interface to update the text in real-time
+
+## 🔄 Two Approaches Demonstrated
+
+This application demonstrates **two different approaches** for real-time text updates:
+
+### 1. Server-Sent Events (SSE) - Main Demo (`/`)
+**Real-time push-based updates**
+
+✅ **Advantages:**
+- **Instant updates** - Changes appear immediately (< 100ms)
+- **Efficient** - Only sends data when changes occur
+- **Real-time** - True push-based communication
+- **Lower bandwidth** - No unnecessary requests
+
+⚠️ **Challenges:**
+- **Memory management** - Persistent connections can accumulate
+- **Connection handling** - Requires proper cleanup and reconnection logic
+- **Scaling complexity** - Need to manage connection limits and cleanup
+- **Browser compatibility** - Some older browsers have limitations
+
+### 2. Simple Polling - Demo2 (`/demo2`)
+**Interval-based HTTP requests**
+
+✅ **Advantages:**
+- **Simple to implement** - Just `fetch()` in `setInterval()`
+- **No memory leaks** - Each request is independent and self-contained
+- **Universal compatibility** - Works in all browsers and environments
+- **Predictable resource usage** - Easy to calculate server load
+- **Easy debugging** - Standard HTTP requests in dev tools
+
+⚠️ **Trade-offs:**
+- **Delayed updates** - Up to 3 second delay for changes to appear
+- **Less efficient** - Makes requests even when no changes occur
+- **Higher server load** - Constant requests from all clients
+- **More bandwidth usage** - Regular requests regardless of data changes
+
+### When to Use Each Approach:
+
+**Use SSE (Main Demo)** when:
+- You need instant updates (< 1 second)
+- Update frequency is unpredictable
+- You have the infrastructure to handle persistent connections
+- Real-time user experience is critical
+
+**Use Polling (Demo2)** when:
+- Simplicity is more important than instant updates
+- Updates are infrequent (every few seconds is acceptable)
+- You want to avoid connection management complexity
+- You need broad compatibility and easy debugging
 
 ## 🛠️ Technology Stack
 
@@ -121,11 +186,17 @@ sequenceDiagram
 
 ## 📋 API Endpoints
 
-### GET `/events`
+### GET `/api/events`
 Server-Sent Events endpoint for real-time updates
 - **Response**: `text/event-stream`
 - **Data Format**: `{"dynamicString": "current text"}`
-- **Features**: Auto-reconnection, connection status
+- **Features**: Auto-reconnection, client management via SSE service
+
+### GET `/api/text`
+Simple API endpoint for polling approach
+- **Response**: `application/json`
+- **Data Format**: `{"dynamicString": "current text"}`
+- **Cache Headers**: No-cache for fresh data
 
 ### POST `/update/text`
 Update the dynamic text
@@ -154,30 +225,21 @@ COPY --from=builder /app/dist ./dist
 CMD ["node", "./dist/server/entry.mjs"]
 ```
 
-## 💰 Cost Analysis for Server-Sent Events
+## 💰 AWS Deployment Cost
 
-### AWS Cost Breakdown (Monthly estimates):
+**💡 Quick Summary:** Running SSE or simple GET endpoints on AWS ECS Fargate costs about the same — pricing depends on container uptime, not request type.
 
-**ECS Fargate**:
-- 1 vCPU, 2GB RAM, 24/7: ~$29.50/month
-- **SSE Impact**: Minimal, as connections are lightweight
+### Monthly Cost Breakdown:
 
-**Application Load Balancer**:
-- Base cost: ~$16.20/month
-- **SSE Impact**: +$5-15/month (persistent connections increase LCU usage)
+**ECS Fargate (0.25 vCPU + 0.5 GB)**: ≈ $7/month (24/7)
+**Application Load Balancer + Data Transfer**: ≈ $15–25/month
 
-**CloudFront**:
-- Data transfer: $0.085/GB
-- Requests: $0.0075/10k requests
-- **SSE Impact**: Minimal (SSE doesn't go through CDN)
+**Total: ≈ $25–35/month** for 24/7 uptime
 
-**Total Estimated Cost**: $30-60/month for moderate traffic
-
-### SSE-Specific Considerations:
-- **Long-lived connections** increase ALB LCU consumption
-- **Memory usage** scales with concurrent connections
-- **Connection limits** per ECS task (~1000-5000 depending on configuration)
-- **Scaling strategy** needed for high concurrent users
+### SSE vs GET Endpoints:
+- **Nearly identical cost** for compute and load balancing
+- SSE might add a few dollars only if streaming large data or handling thousands of concurrent clients
+- Both approaches use the same container resources and ALB capacity
 
 ## 🚀 Deployment
 
@@ -214,11 +276,16 @@ npm run preview
 ```
 src/
 ├── pages/
-│   ├── index.astro          # Main page with SSE client
+│   ├── index.astro          # Main page (SSE demo)
+│   ├── demo2.astro          # Simple polling demo
 │   ├── admin.astro          # Admin interface
-│   ├── events.ts            # SSE endpoint
+│   ├── api/
+│   │   ├── events.ts        # SSE endpoint
+│   │   └── text.ts          # JSON API endpoint
 │   └── update/
 │       └── text.ts          # Update API endpoint
+├── services/
+│   └── sse-service.ts       # SSE client management
 ├── data/
 │   └── text.json            # Persistent text storage
 infra/
