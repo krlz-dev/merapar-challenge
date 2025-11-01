@@ -1,0 +1,28 @@
+Challenge
+
+On a cloud platform of your choice provision a service, using Infrastructure as Code, that serves a html page.
+
+
+The content of the page must be ..
+
+
+<h1>The saved string is dynamic string</h1>   
+
+
+.. Where dynamic string can be set to whatever is requested without having to re-deploy. 
+When you demonstrate the solution in the interview you will need to modify the string to show it works. 
+Any user accessing the url must get the same result. 
+NOTE the URL should be the same no matter what the  dynamic string is. You will be asked to take us through the source code.
+
+
+Accompany this work with a short document (PDF) explaining: 
+Your solution and discussing the available options
+The reasons behind the decisions you made
+How you would embellish the solution were you to have more time.
+
+explaining the solution and discussing the available options for this case escenatio of a dynamic text considering rules for the task
+ RULE 1: Dynamic string can be set to whatever is requested without having to re-deploy.
+ RULE 2: The URL should be the same no matter what the  dynamic string is.
+
+Explain possible solutions for it, considering as a topic the server side vs client side, explain why a solution in any framework, programming language or set of tools could have been chosen, astro was considered for its simplicity at the time of implementing server side redender solutions, focusing as a main topic to have a dynamic text fromt he server side
+and finally , mention how deep and how a solution like this coul be improved for different use cases depending on the case, time , user base , focus on software engineering quality attributes implicit ones

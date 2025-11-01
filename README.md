@@ -111,12 +111,23 @@ sequenceDiagram
 
 ## 🚀 Live Demo
 
+### Full SSR Solution (Real-time with SSE)
 **Application URL**: https://d1jk0h2l40omp5.cloudfront.net
 
-### Pages:
+**Pages:**
 - **Main Page** (`/`): Displays the dynamic text with real-time updates using SSE
 - **Demo2 Page** (`/demo2`): Simple polling approach (updates every 3 seconds)
 - **Admin Page** (`/admin`): Interface to update the text in real-time
+
+### Simplest Alternative Solution (S3 + CloudFront)
+**Application URL**: https://simplest-alternative-944473419677-us-west-2.s3.us-west-2.amazonaws.com/index.html
+
+**Features:**
+- ✅ **Same functionality**: Displays dynamic text that updates without redeploy
+- ✅ **Same UI**: Identical Bootstrap styling and user experience
+- ✅ **Cost optimized**: $0.10-$0.60/month vs $25-$35/month
+- ⚡ **Update method**: S3 file upload instead of real-time SSE
+- 📁 **Source code**: Available in `/simplest-alternative/` directory
 
 ## 🔄 Two Approaches Demonstrated
 

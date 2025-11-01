@@ -1,18 +1,15 @@
 import type { APIRoute } from 'astro';
 import fs from 'fs';
 import path from 'path';
-import { sseService } from '../../services/sse-service.js';
+import { sseService } from '@/services/sse-service.ts';
 
 export const GET: APIRoute = async () => {
   const stream = new ReadableStream({
     start(controller) {
       const encoder = new TextEncoder();
-      
-      // Send initial connection message
       const initialMessage = `data: ${JSON.stringify({ type: 'connected' })}\n\n`;
       controller.enqueue(encoder.encode(initialMessage));
 
-      // Send current text data
       try {
         const dataPath = path.join(process.cwd(), 'src/data/text.json');
         const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
@@ -22,7 +19,6 @@ export const GET: APIRoute = async () => {
         console.error('Error reading initial text:', error);
       }
 
-      // Register client with SSE service
       const client = sseService.addClient(controller);
       
       return client;
@@ -30,7 +26,6 @@ export const GET: APIRoute = async () => {
     
     cancel() {
       console.log('SSE stream cancelled');
-      // Client cleanup is handled automatically by the service
     }
   });
 
