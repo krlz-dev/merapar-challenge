@@ -146,6 +146,23 @@ After constraint analysis, only two fundamental approaches remained viable:
 
 \subsection{Solution 1: Static Hosting with Client-Side Configuration}
 
+\textbf{Monthly Cost:} \$0.10 - \$0.60/month
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+\textbf{Service Component} & \textbf{Monthly Cost (USD)} \\
+\midrule
+S3 Storage (1MB) & \$0.023 \\
+S3 Requests (1K/month) & \$0.004 \\
+CloudFront Data Transfer (1GB) & \$0.085 \\
+CloudFront Requests (10K) & \$0.008 \\
+\midrule
+\textbf{Total} & \textbf{\$0.10 - \$0.60} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
 \subsubsection{Architecture Overview}
 The static solution implements a cost-optimized approach using AWS S3 and CloudFront:
 
@@ -171,27 +188,26 @@ The static solution consists of:
     \item \textcolor{solutioncolor}{\textbf{✓ Constraint 2:}} Single HTML page serves all content variations
 \end{itemize}
 
-\subsubsection{Cost Analysis}
-Monthly operational costs (based on AWS us-west-2 pricing, 1K pageviews/month):
 
-\begin{table}[h]
-\centering
+\subsection{Solution 2: Server-Side Rendering with Real-Time Updates}
+
+\textbf{Monthly Cost:} \$25.00 - \$35.00/month
+
+\begin{center}
 \begin{tabular}{lr}
 \toprule
 \textbf{Service Component} & \textbf{Monthly Cost (USD)} \\
 \midrule
-S3 Storage (1MB) & \$0.023 \\
-S3 Requests (1K/month) & \$0.004 \\
-CloudFront Data Transfer (1GB) & \$0.085 \\
-CloudFront Requests (10K) & \$0.008 \\
+ECS Fargate (0.25 vCPU, 0.5GB) & \$7.00 \\
+Application Load Balancer & \$16.20 \\
+CloudFront Data Transfer & \$0.85 \\
+VPC NAT Gateway (shared) & \$8.00 \\
+Data Transfer & \$1.00 \\
 \midrule
-\textbf{Total} & \textbf{\$0.10 - \$0.60} \\
+\textbf{Total} & \textbf{\$25.00 - \$35.00} \\
 \bottomrule
 \end{tabular}
-\caption{Static Solution Cost Breakdown}
-\end{table}
-
-\subsection{Solution 2: Server-Side Rendering with Real-Time Updates}
+\end{center}
 
 \subsubsection{Framework Selection}
 Multiple frameworks could satisfy the SSR requirements, including React with Next.js, Vue with Nuxt, Angular, or traditional server-side solutions like Express with EJS, Django, or Spring Boot. \textbf{Astro.js was chosen as a personal preference} due to its modern approach to server-side rendering, minimal client-side JavaScript, and component-based architecture that felt natural for this challenge.
@@ -226,26 +242,6 @@ The SSR solution utilizes:
     \item \textcolor{solutioncolor}{\textbf{✓ Constraint 2:}} Server-side routing maintains consistent URLs
 \end{itemize}
 
-\subsubsection{Cost Analysis}
-Monthly operational costs (based on AWS us-west-2 pricing, 24/7 uptime):
-
-\begin{table}[h]
-\centering
-\begin{tabular}{lr}
-\toprule
-\textbf{Service Component} & \textbf{Monthly Cost (USD)} \\
-\midrule
-ECS Fargate (0.25 vCPU, 0.5GB) & \$7.00 \\
-Application Load Balancer & \$16.20 \\
-CloudFront Data Transfer & \$0.85 \\
-VPC NAT Gateway (shared) & \$8.00 \\
-Data Transfer & \$1.00 \\
-\midrule
-\textbf{Total} & \textbf{\$25.00 - \$35.00} \\
-\bottomrule
-\end{tabular}
-\caption{SSR Solution Cost Breakdown}
-\end{table}
 
 
 \section{Technical Implementation Summary}
