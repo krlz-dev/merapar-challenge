@@ -1,0 +1,363 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Page setup
+\geometry{margin=1in}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Dynamic Text Solution}
+\lhead{Carlos A. Rojas}
+\cfoot{\thepage}
+
+% Code listing setup
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10}
+}
+
+% Custom colors
+\definecolor{rulecolor}{RGB}{0,102,204}
+\definecolor{solutioncolor}{RGB}{0,153,76}
+\definecolor{costcolor}{RGB}{204,102,0}
+
+% Title formatting
+\titleformat{\section}{\Large\bfseries\color{rulecolor}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+\title{
+    \vspace{-1.5cm}
+    {\Huge\bfseries Dynamic Text Solution}\\
+    \vspace{0.3cm}
+    {\Large Technical Analysis and Implementation Report}\\
+    \vspace{0.2cm}
+    {\large Merapar Company Challenge}
+}
+
+\author{
+    \textbf{Carlos Andres Monserrat Rojas Rojas}\\
+    \textit{Software Engineer}\\
+    \href{mailto:your.email@example.com}{carlos.rojas@example.com}
+}
+
+\date{November 2025}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This report presents the technical solution for a software engineering challenge provided by Merapar Company as part of their hiring process. The challenge required implementing a dynamic text display system with specific constraints: content updates without redeployment and consistent URL structure. Two architectural approaches were developed: a cost-optimized static solution using AWS S3 and CloudFront (\$0.10-\$0.60/month), and an advanced server-side rendering solution with real-time capabilities using AWS ECS Fargate (\$25-\$35/month). Both solutions demonstrate Infrastructure as Code principles and satisfy the challenge requirements while optimizing for different operational characteristics.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Challenge Overview and Technical Analysis}
+
+\subsection{Merapar Company Challenge Context}
+This document presents the technical solution for a software engineering challenge provided by \textbf{Merapar Company} as part of their hiring process. The challenge was delivered via email with the following specific requirements:
+
+\vspace{0.3cm}
+\begin{center}
+\fcolorbox{rulecolor}{rulecolor!5}{
+\begin{minipage}{0.95\textwidth}
+\vspace{0.2cm}
+\begin{center}
+\textbf{\textcolor{rulecolor}{\large MERAPAR CHALLENGE REQUIREMENTS}}
+\end{center}
+\vspace{0.1cm}
+
+\textbf{Platform:} Cloud platform of your choice\\
+\textbf{Technology:} Infrastructure as Code\\
+\textbf{Output:} HTML page serving specific content
+
+\vspace{0.2cm}
+\textbf{Required HTML Content:}
+\begin{center}
+\colorbox{gray!15}{\texttt{<h1>The saved string is dynamic string</h1>}}
+\end{center}
+
+\vspace{0.2cm}
+\textbf{Key Requirements:}
+\begin{itemize}[leftmargin=1em]
+    \item Dynamic string can be set \textbf{without re-deployment}
+    \item All users accessing the URL get the \textbf{same result}
+    \item URL must remain \textbf{consistent} regardless of dynamic string content
+    \item Solution must be \textbf{demonstrable} during interview with live content changes
+\end{itemize}
+\vspace{0.2cm}
+\end{minipage}
+}
+\end{center}
+\vspace{0.3cm}
+
+\section{Architectural Analysis and Constraint Impact}
+
+The challenge establishes two fundamental constraints that drive all architectural decisions:
+
+\begin{center}
+\colorbox{rulecolor!20}{
+\begin{minipage}{0.9\textwidth}
+\textbf{\textcolor{rulecolor}{CONSTRAINT 1:}} Dynamic string can be set without re-deployment\\
+\textbf{\textcolor{rulecolor}{CONSTRAINT 2:}} URL remains consistent regardless of content changes
+\end{minipage}
+}
+\end{center}
+
+\subsection{Eliminated Architectural Patterns}
+These two simple constraints eliminated many common web application approaches. The no re-deployment requirement rules out any solution that bakes content into the code during build time, such as static site generators, hardcoded values, or environment variables. The consistent URL requirement eliminates solutions that change the URL based on content, such as different paths (\texttt{/content/\{id\}}), query parameters (\texttt{?text=value}), subdomains (\texttt{content.domain.com}), or hash routing (\texttt{\#/content}).
+
+\subsection{Viable Solution Patterns}
+After constraint analysis, only two fundamental approaches remained viable:
+\begin{enumerate}
+    \item \textbf{Server-side content resolution:} Server reads external configuration and renders appropriate content
+    \item \textbf{Client-side configuration loading:} Client fetches configuration data and updates DOM accordingly
+\end{enumerate}
+
+\section{Solution Implementation}
+
+\subsection{Solution 1: Static Hosting with Client-Side Configuration}
+
+\subsubsection{Architecture Overview}
+The static solution implements a cost-optimized approach using AWS S3 and CloudFront:
+
+\textbf{Infrastructure Flow:}
+\begin{center}
+\texttt{User Browser → CloudFront CDN → S3 Static Website}\\
+\texttt{Admin (AWS CLI) → S3 (config.json upload)}
+\end{center}
+
+\subsubsection{Technical Implementation}
+The static solution consists of:
+\begin{itemize}[leftmargin=*]
+    \item Single HTML file with embedded CSS and JavaScript
+    \item JSON configuration file (\texttt{config.json}) for dynamic content
+    \item Periodic client-side polling for configuration updates
+    \item AWS S3 bucket configured for static website hosting
+    \item CloudFront distribution for global content delivery
+\end{itemize}
+
+\subsubsection{Constraint Compliance Analysis}
+\begin{itemize}[leftmargin=*]
+    \item \textcolor{solutioncolor}{\textbf{✓ Constraint 1:}} Content updates via \texttt{config.json} file upload to S3
+    \item \textcolor{solutioncolor}{\textbf{✓ Constraint 2:}} Single HTML page serves all content variations
+\end{itemize}
+
+\subsubsection{Cost Analysis}
+Monthly operational costs (based on AWS us-west-2 pricing, 1K pageviews/month):
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lr}
+\toprule
+\textbf{Service Component} & \textbf{Monthly Cost (USD)} \\
+\midrule
+S3 Storage (1MB) & \$0.023 \\
+S3 Requests (1K/month) & \$0.004 \\
+CloudFront Data Transfer (1GB) & \$0.085 \\
+CloudFront Requests (10K) & \$0.008 \\
+\midrule
+\textbf{Total} & \textbf{\$0.10 - \$0.60} \\
+\bottomrule
+\end{tabular}
+\caption{Static Solution Cost Breakdown}
+\end{table}
+
+\subsection{Solution 2: Server-Side Rendering with Real-Time Updates}
+
+\subsubsection{Framework Selection}
+Multiple frameworks could satisfy the SSR requirements, including React with Next.js, Vue with Nuxt, Angular, or traditional server-side solutions like Express with EJS, Django, or Spring Boot. \textbf{Astro.js was chosen as a personal preference} due to its modern approach to server-side rendering, minimal client-side JavaScript, and component-based architecture that felt natural for this challenge.
+
+\subsubsection{Architecture Overview}
+The SSR solution implements an advanced approach optimized for real-time capabilities:
+
+\textbf{Infrastructure Flow:}
+\begin{center}
+\texttt{User/Admin Browser → CloudFront CDN → Application Load Balancer → ECS Fargate}\\
+\texttt{ECS Fargate ← ECR Repository (Docker images)}\\
+\texttt{ECS Fargate ↝ All Browsers (SSE real-time updates)}
+\end{center}
+
+\textbf{Note:} Admin uses the same Astro application through \texttt{/admin} route to update content via web interface.
+
+\subsubsection{Technical Implementation}
+The SSR solution utilizes:
+\begin{itemize}[leftmargin=*]
+    \item Astro.js framework for server-side rendering
+    \item Server-Sent Events (SSE) for real-time client updates
+    \item RESTful API endpoints for content management
+    \item JSON file-based persistent storage
+    \item Docker containerization with multi-stage builds
+    \item AWS ECS Fargate for serverless container execution
+    \item Application Load Balancer for traffic distribution
+\end{itemize}
+
+\subsubsection{Constraint Compliance Analysis}
+\begin{itemize}[leftmargin=*]
+    \item \textcolor{solutioncolor}{\textbf{✓ Constraint 1:}} Updates via API endpoints without container redeploy
+    \item \textcolor{solutioncolor}{\textbf{✓ Constraint 2:}} Server-side routing maintains consistent URLs
+\end{itemize}
+
+\subsubsection{Cost Analysis}
+Monthly operational costs (based on AWS us-west-2 pricing, 24/7 uptime):
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lr}
+\toprule
+\textbf{Service Component} & \textbf{Monthly Cost (USD)} \\
+\midrule
+ECS Fargate (0.25 vCPU, 0.5GB) & \$7.00 \\
+Application Load Balancer & \$16.20 \\
+CloudFront Data Transfer & \$0.85 \\
+VPC NAT Gateway (shared) & \$8.00 \\
+Data Transfer & \$1.00 \\
+\midrule
+\textbf{Total} & \textbf{\$25.00 - \$35.00} \\
+\bottomrule
+\end{tabular}
+\caption{SSR Solution Cost Breakdown}
+\end{table}
+
+
+\section{Technical Implementation Summary}
+
+\subsection{Static Solution}
+Minimal client-side polling approach:
+\begin{itemize}[leftmargin=*]
+    \item Single HTML file with embedded JavaScript
+    \item Fetches \texttt{config.json} every 30 seconds
+    \item Updates DOM with new content
+    \item Admin updates via direct S3 file upload
+\end{itemize}
+
+\subsection{SSR Solution}
+Real-time server-side approach:
+\begin{itemize}[leftmargin=*]
+    \item Astro.js with Server-Sent Events (SSE)
+    \item SSE service manages client connections
+    \item REST API for content updates via \texttt{/admin} page
+    \item JSON file persistence with broadcast to all clients
+\end{itemize}
+
+\section{Key Design Patterns}
+
+\subsection{Observer Pattern (SSR Solution)}
+SSE implementation manages client connections with real-time broadcasting:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{SSEService} maintains active client connections
+    \item Content updates trigger broadcast to all observers
+    \item Automatic cleanup of disconnected clients
+\end{itemize}
+
+\subsection{Strategy Pattern}
+Two distinct update strategies for different requirements:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Polling:} Static solution with periodic HTTP requests
+    \item \textbf{Push:} SSR solution with Server-Sent Events
+\end{itemize}
+
+\section{Security and Production Considerations}
+
+\subsection{Current Security}
+\begin{itemize}[leftmargin=*]
+    \item \textcolor{solutioncolor}{\textbf{✓}} HTTPS enforcement via CloudFront
+    \item \textcolor{solutioncolor}{\textbf{✓}} VPC and security group isolation
+    \item \textcolor{orange}{\textbf{⚠}} Admin interface lacks authentication (demo only)
+\end{itemize}
+
+\subsection{Production Requirements}
+For enterprise deployment: authentication, input validation, rate limiting, audit logging.
+
+\section{Infrastructure as Code}
+
+\subsection{CDK Implementation}
+Both solutions use AWS CDK v2 with TypeScript:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Static:} S3 + CloudFront stack with automated deployment
+    \item \textbf{SSR:} ECS Fargate + ALB + ECR stack with multi-stage build
+\end{itemize}
+
+\subsection{Deployment Automation}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Static:} Single script deployment (\$0.10-\$0.60/month)
+    \item \textbf{SSR:} Multi-stage pipeline: Infrastructure → Docker Build → Service Update (\$25-\$35/month)
+\end{itemize}
+
+\section{Key Insights and Future Enhancements}
+
+\subsection{Technical Insights}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Constraint Impact:} Simple requirements eliminated most conventional web patterns
+    \item \textbf{Cost vs. Capability:} 70x cost difference for functionally equivalent solutions
+    \item \textbf{Architecture Trade-offs:} Minimal complexity vs. real-time capabilities
+\end{itemize}
+
+\subsection{Future Enhancements and Solution Selection}
+\textbf{The choice between solutions depends entirely on project requirements:}
+
+\subsubsection{When to Choose the S3 Static Solution}
+If the project is defined as a simple content display with infrequent updates, the S3 solution is more than sufficient:
+\begin{itemize}[leftmargin=*]
+    \item Basic content updates (weekly/monthly)
+    \item Single admin user
+    \item Cost-sensitive projects
+    \item Simple deployment requirements
+\end{itemize}
+
+\subsubsection{When to Choose the SSR Platform Solution}
+If the project is defined as a platform requiring robust functionality, proper design patterns become essential:
+\begin{itemize}[leftmargin=*]
+    \item Frequent content updates (multiple times daily)
+    \item Multiple admin users requiring real-time collaboration
+    \item Integration with other systems
+    \item Scalability and performance requirements
+    \item Enterprise-grade monitoring and security
+\end{itemize}
+
+\textbf{Key Insight:} Clear project definition drives architecture choice. Without understanding the actual use case, frequency of updates, user base, and growth expectations, any solution recommendation would be premature.
+
+\section{Conclusion}
+
+This Merapar challenge successfully demonstrates how simple constraints can drive innovative architectural solutions. The requirement for dynamic content updates without redeployment, combined with consistent URL structures, eliminated many conventional approaches and required careful consideration of remaining viable options.
+
+Two distinct solutions were developed: a cost-optimized static approach (\$0.10-\$0.60/month) and an advanced server-side rendering solution (\$25-\$35/month). Both maintain full compliance with the specified constraints while demonstrating different architectural philosophies - minimal viable complexity versus feature-rich capabilities.
+
+The complete implementations, including Infrastructure as Code automation and deployment scripts, are available in the public repository. Both solutions demonstrate production-ready practices and provide clear evolution paths for future enhancement based on changing requirements.
+
+\vspace{1cm}
+
+\begin{center}
+\textit{This technical report fulfills the Merapar Company challenge requirements, demonstrating both the implemented solutions and the architectural reasoning behind each design decision.}
+\end{center}
+
+\end{document}
