@@ -23,8 +23,8 @@
 \geometry{margin=1in}
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{Dynamic Text Solution}
-\lhead{Carlos A. Rojas}
+\rhead{Merapar Challenge}
+\lhead{Carlos Rojas}
 \cfoot{\thepage}
 
 % Code listing setup
@@ -54,17 +54,17 @@
 
 \title{
     \vspace{-1.5cm}
-    {\Huge\bfseries Dynamic Text Solution}\\
+    {\Huge\bfseries Merapar Challenge}\\
     \vspace{0.3cm}
     {\Large Technical Analysis and Implementation Report}\\
     \vspace{0.2cm}
-    {\large Merapar Company Challenge}
+    {\large Dynamic Text Solution}
 }
 
 \author{
     \textbf{Carlos Andres Monserrat Rojas Rojas}\\
     \textit{Software Engineer}\\
-    \href{mailto:your.email@example.com}{carlos.rojas@example.com}
+    \href{mailto:your.email@example.com}{carlosandresmonserrat@gmail.com}
 }
 
 \date{November 2025}
@@ -268,23 +268,6 @@ Real-time server-side approach:
     \item JSON file persistence with broadcast to all clients
 \end{itemize}
 
-\section{Key Design Patterns}
-
-\subsection{Observer Pattern (SSR Solution)}
-SSE implementation manages client connections with real-time broadcasting:
-\begin{itemize}[leftmargin=*]
-    \item \texttt{SSEService} maintains active client connections
-    \item Content updates trigger broadcast to all observers
-    \item Automatic cleanup of disconnected clients
-\end{itemize}
-
-\subsection{Strategy Pattern}
-Two distinct update strategies for different requirements:
-\begin{itemize}[leftmargin=*]
-    \item \textbf{Polling:} Static solution with periodic HTTP requests
-    \item \textbf{Push:} SSR solution with Server-Sent Events
-\end{itemize}
-
 \section{Security and Production Considerations}
 
 \subsection{Current Security}
@@ -297,54 +280,68 @@ Two distinct update strategies for different requirements:
 \subsection{Production Requirements}
 For enterprise deployment: authentication, input validation, rate limiting, audit logging.
 
-\section{Infrastructure as Code}
+\section{Implementation and Future Enhancements}
 
-\subsection{CDK Implementation}
-Both solutions use AWS CDK v2 with TypeScript:
+\subsection{Infrastructure as Code Implementation}
+Both solutions use AWS CDK v2 with TypeScript for Infrastructure as Code:
 
 \begin{itemize}[leftmargin=*]
     \item \textbf{Static:} S3 + CloudFront stack with automated deployment
     \item \textbf{SSR:} ECS Fargate + ALB + ECR stack with multi-stage build
 \end{itemize}
 
-\subsection{Deployment Automation}
+\textbf{Deployment Automation:}
 \begin{itemize}[leftmargin=*]
     \item \textbf{Static:} Single script deployment (\$0.10-\$0.60/month)
     \item \textbf{SSR:} Multi-stage pipeline: Infrastructure → Docker Build → Service Update (\$25-\$35/month)
 \end{itemize}
 
-\section{Key Insights and Future Enhancements}
+\subsection{How to Embellish the Solution with More Time}
 
-\subsection{Technical Insights}
+Given additional development time, the following enhancements would significantly improve both solutions:
+
+\subsubsection{Security Enhancements}
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Constraint Impact:} Simple requirements eliminated most conventional web patterns
-    \item \textbf{Cost vs. Capability:} 70x cost difference for functionally equivalent solutions
-    \item \textbf{Architecture Trade-offs:} Minimal complexity vs. real-time capabilities
+    \item \textbf{Authentication \& Authorization:} Implement AWS Cognito or Auth0 for admin access
+    \item \textbf{API Security:} Add rate limiting, input validation, and CSRF protection
+    \item \textbf{Audit Logging:} Track all content changes with timestamps and user attribution
+    \item \textbf{Secret Management:} Use AWS Secrets Manager for sensitive configuration
 \end{itemize}
 
-\subsection{Future Enhancements and Solution Selection}
-\textbf{The choice between solutions depends entirely on project requirements:}
-
-\subsubsection{When to Choose the S3 Static Solution}
-If the project is defined as a simple content display with infrequent updates, the S3 solution is more than sufficient:
+\subsubsection{Operational Excellence}
 \begin{itemize}[leftmargin=*]
-    \item Basic content updates (weekly/monthly)
-    \item Single admin user
-    \item Cost-sensitive projects
-    \item Simple deployment requirements
+    \item \textbf{Monitoring \& Alerting:} CloudWatch dashboards, custom metrics, and PagerDuty integration
+    \item \textbf{CI/CD Pipeline:} GitHub Actions with automated testing, security scanning, and staged deployments
+    \item \textbf{Blue-Green Deployment:} Zero-downtime deployments with automatic rollback capabilities
+    \item \textbf{Health Checks:} Comprehensive application and infrastructure health monitoring
 \end{itemize}
 
-\subsubsection{When to Choose the SSR Platform Solution}
-If the project is defined as a platform requiring robust functionality, proper design patterns become essential:
+\subsubsection{Advanced Features}
 \begin{itemize}[leftmargin=*]
-    \item Frequent content updates (multiple times daily)
-    \item Multiple admin users requiring real-time collaboration
-    \item Integration with other systems
-    \item Scalability and performance requirements
-    \item Enterprise-grade monitoring and security
+    \item \textbf{Multi-Environment Support:} Development, staging, and production environments with proper promotion workflows
+    \item \textbf{Content Versioning:} Track content history with rollback capabilities
+    \item \textbf{A/B Testing:} Support for multiple content variants with user segmentation
+    \item \textbf{Analytics Integration:} Google Analytics, custom event tracking, and user behavior analysis
+    \item \textbf{Content Scheduling:} Automated content updates based on time-based triggers
 \end{itemize}
 
-\textbf{Key Insight:} Clear project definition drives architecture choice. Without understanding the actual use case, frequency of updates, user base, and growth expectations, any solution recommendation would be premature.
+\subsubsection{Scalability Improvements}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Database Integration:} Replace JSON files with RDS or DynamoDB for persistent storage
+    \item \textbf{Caching Strategy:} Redis for session management and content caching
+    \item \textbf{Auto-Scaling:} ECS service auto-scaling based on CPU/memory utilization
+    \item \textbf{Global Distribution:} Multi-region deployment for improved latency
+\end{itemize}
+
+\subsubsection{Developer Experience}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Local Development:} Docker Compose setup for consistent local environments
+    \item \textbf{Testing Framework:} Unit tests, integration tests, and end-to-end testing with Playwright
+    \item \textbf{API Documentation:} OpenAPI/Swagger documentation with interactive testing
+    \item \textbf{Code Quality:} ESLint, Prettier, and SonarQube integration
+\end{itemize}
+
+\textbf{Priority Ranking:} Security enhancements would be the first priority, followed by operational monitoring, then advanced features based on specific business requirements.
 
 \section{Conclusion}
 
