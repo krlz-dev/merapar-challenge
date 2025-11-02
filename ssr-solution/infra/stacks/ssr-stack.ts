@@ -110,14 +110,14 @@ export class SSRStack extends cdk.Stack {
         originRequestPolicy: cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
       },
       additionalBehaviors: {
-        '/events': {
+        '/api/events': {
           origin: new origins.LoadBalancerV2Origin(fargateService.loadBalancer, {
             protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
           }),
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-          originRequestPolicy: cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
+          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
         },
         '/update/*': {
           origin: new origins.LoadBalancerV2Origin(fargateService.loadBalancer, {
