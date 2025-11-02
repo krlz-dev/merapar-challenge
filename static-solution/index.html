@@ -2,11 +2,17 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
-	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 	<meta name="viewport" content="width=device-width" />
-	<title>Dynamic Text - Simplest Alternative</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<title>Dynamic Text</title>
 	<style>
+		body {
+			margin: 0;
+			padding: 3rem;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+		}
 		#dynamicText {
 			font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 			font-weight: 100;
@@ -14,146 +20,24 @@
 			font-size: 2.5rem;
 			letter-spacing: -0.02em;
 		}
-		.update-indicator {
-			font-size: 0.9rem;
-			color: #6c757d;
-		}
-		.badge {
-			font-size: 0.75rem;
-		}
-		.solution-info {
-			background-color: #f8f9fa;
-			border-left: 4px solid #0d6efd;
-			padding: 1rem;
-			margin-top: 2rem;
-		}
 	</style>
 </head>
 <body>
- 
-	<div class="container mt-5">
-		<div class="row justify-content-center">
-			<div class="col-md-8">
-				<div class="text-center">
-					<h1 id="dynamicText">Loading dynamic content...</h1>
-					<div class="mt-3">
-						<span class="badge bg-info" id="status">Fetching content...</span>
-						<div class="update-indicator mt-2">
-							<small>Last updated: <span id="lastUpdated">Never</span></small>
-						</div>
-					</div>
-					<div class="mt-4">
-						<a href="../index.html" class="btn btn-outline-secondary me-2">← Back to SSR Demo</a>
-						<a href="../demo2.html" class="btn btn-outline-info">Polling Demo</a>
-					</div>
-				</div>
-			</div>
-		</div>
-		
-		<div class="row justify-content-center">
-			<div class="col-md-8">
-				<div class="solution-info">
-					<h5><strong>🪣 S3 + CloudFront Solution</strong></h5>
-					<p class="mb-2">
-						This is the <strong>simplest possible implementation</strong> that satisfies both rules:
-					</p>
-					<ul class="list-unstyled mb-0">
-						<li>✅ <strong>RULE 1</strong>: Update <code>config.json</code> without redeploy</li>
-						<li>✅ <strong>RULE 2</strong>: Same URL regardless of content</li>
-						<li>💰 <strong>Cost</strong>: $0.10-$0.60/month</li>
-						<li>⚡ <strong>Updates</strong>: 1-5 minutes (depending on cache)</li>
-						<li>🔧 <strong>Complexity</strong>: Minimal - just static files</li>
-					</ul>
-				</div>
-			</div>
-		</div>
-		
-		<div class="row justify-content-center mt-4">
-			<div class="col-md-8">
-				<div class="card">
-					<div class="card-header">
-						<h6 class="mb-0">How to Update Content</h6>
-					</div>
-					<div class="card-body">
-						<p class="card-text mb-2">
-							<strong>Method 1: AWS CLI</strong>
-						</p>
-						<code class="d-block bg-light p-2 mb-3">
-							aws s3 cp config.json s3://your-bucket/config.json --acl public-read
-						</code>
-						
-						<p class="card-text mb-2">
-							<strong>Method 2: AWS Console</strong>
-						</p>
-						<p class="card-text">
-							Upload new <code>config.json</code> file directly in S3 console
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	
+	<h1 id="dynamicText">Loading...</h1>
 	<script>
-		const dynamicTextElement = document.getElementById('dynamicText');
-		const statusElement = document.getElementById('status');
-		const lastUpdatedElement = document.getElementById('lastUpdated');
-		
-		let fetchCount = 0;
-		
 		async function fetchContent() {
 			try {
-				fetchCount++;
-				statusElement.textContent = 'Fetching...';
-				statusElement.className = 'badge bg-warning';
-				
-				// Add cache busting to ensure fresh content
-				const cacheBuster = Date.now();
-				const response = await fetch(`config.json?v=${cacheBuster}`);
-				
-				if (!response.ok) {
-					throw new Error(`HTTP ${response.status}`);
-				}
-				
+				const response = await fetch(`config.json?v=${Date.now()}`);
 				const data = await response.json();
-				const content = data.dynamicString || 'Default dynamic string';
-				
-				dynamicTextElement.textContent = `The saved string is ${content}`;
-				
-				statusElement.textContent = `✅ Content loaded (fetch #${fetchCount})`;
-				statusElement.className = 'badge bg-success';
-				
-				const now = new Date().toLocaleTimeString();
-				lastUpdatedElement.textContent = now;
-				
-				console.log(`Fetch #${fetchCount}: Loaded content at ${now}:`, content);
-				
+				const content = data.dynamicString || 'dynamic string';
+				document.getElementById('dynamicText').textContent = `The saved string is ${content}`;
 			} catch (error) {
-				console.error('Error fetching content:', error);
-				
-				dynamicTextElement.textContent = 'Error loading content';
-				statusElement.textContent = 'Error - Will retry';
-				statusElement.className = 'badge bg-danger';
-
-				setTimeout(() => {
-					dynamicTextElement.textContent = 'The saved string is [Demo Content - Check config.json]';
-					statusElement.textContent = 'Using fallback content';
-					statusElement.className = 'badge bg-secondary';
-				}, 2000);
+				document.getElementById('dynamicText').textContent = 'The saved string is dynamic string';
 			}
 		}
 
 		fetchContent();
 		setInterval(fetchContent, 30000);
-
-		lastUpdatedElement.textContent = new Date().toLocaleTimeString();
-
-		document.addEventListener('keydown', function(event) {
-			if (event.key === 'F5' || (event.ctrlKey && event.key === 'r')) {
-				event.preventDefault();
-				fetchContent();
-			}
-		});
 	</script>
 </body>
 </html>
