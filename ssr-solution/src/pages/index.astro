@@ -44,7 +44,6 @@ try {
 		</div>
 		
 		<script>
-			// Server-Sent Events connection for real-time updates
 			let eventSource;
 			const dynamicTextElement = document.getElementById('dynamicText');
 			
@@ -63,17 +62,17 @@ try {
 				};
 				
 				eventSource.onerror = function() {
-					// Attempt to reconnect after 3 seconds
+					if (eventSource) {
+						eventSource.close();
+					}
+
 					setTimeout(() => {
 						connectSSE();
 					}, 3000);
 				};
 			}
-			
-			// Start SSE connection
+
 			connectSSE();
-			
-			// Clean up SSE connection when page unloads
 			window.addEventListener('beforeunload', function() {
 				if (eventSource) {
 					eventSource.close();

@@ -82,12 +82,15 @@ NEW_TASK_DEF=$(echo $TASK_DEF_JSON | jq --arg image "$FULL_IMAGE_URI" '
 ')
 
 # Register new task definition
-NEW_TASK_DEF_ARN=$(echo $NEW_TASK_DEF | aws ecs register-task-definition \
+TEMP_TASK_DEF_FILE=$(mktemp)
+echo "$NEW_TASK_DEF" > "$TEMP_TASK_DEF_FILE"
+NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
     --profile $AWS_PROFILE \
     --region $AWS_REGION \
-    --cli-input-json file:///dev/stdin \
+    --cli-input-json "file://$TEMP_TASK_DEF_FILE" \
     --query 'taskDefinition.taskDefinitionArn' \
     --output text)
+rm "$TEMP_TASK_DEF_FILE"
 
 echo -e "${YELLOW}📋 Step 3: Updating service with new task definition${NC}"
 aws ecs update-service \

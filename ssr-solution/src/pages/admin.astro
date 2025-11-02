@@ -153,6 +153,11 @@ try {
 					connectionStatus.textContent = 'Disconnected';
 					connectionStatus.className = 'badge bg-danger';
 					
+					// Close existing connection before reconnecting
+					if (eventSource) {
+						eventSource.close();
+					}
+					
 					// Attempt to reconnect after 3 seconds
 					setTimeout(() => {
 						connectionStatus.textContent = 'Reconnecting...';
