@@ -13,6 +13,25 @@ class SSEService {
     const clientId = `client_${++this.clientCounter}_${Date.now()}`;
     let isClosed = false;
 
+    const safeCloseController = () => {
+      try {
+        if (controller.desiredSize !== null) {
+          controller.close();
+        }
+      } catch (error) {
+        if (error.code !== 'ERR_INVALID_STATE') {
+          console.error(`Error closing controller for ${clientId}:`, error);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      if (!isClosed) {
+        console.log(`Auto-closing SSE client ${clientId} due to timeout`);
+        client.cleanup();
+      }
+    }, 5 * 60 * 1000);
+
     const client: SSEClient = {
       id: clientId,
       connectedAt: new Date(),
@@ -25,13 +44,19 @@ class SSEService {
         } catch (error) {
           console.error(`Error writing to SSE client ${clientId}:`, error);
           isClosed = true;
+          clearTimeout(timeoutId);
           this.removeClient(client);
+          safeCloseController();
           throw error;
         }
       },
       cleanup: () => {
-        isClosed = true;
-        this.removeClient(client);
+        if (!isClosed) {
+          isClosed = true;
+          clearTimeout(timeoutId);
+          this.removeClient(client);
+          safeCloseController();
+        }
       }
     };
 

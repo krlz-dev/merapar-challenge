@@ -5,9 +5,11 @@ import { sseService, type SSEClient } from '@/services/sse-service.ts';
 
 export const GET: APIRoute = async () => {
   let client: SSEClient;
+  let streamController: ReadableStreamDefaultController<Uint8Array>;
   
   const stream = new ReadableStream({
     start(controller) {
+      streamController = controller;
       const encoder = new TextEncoder();
       const initialMessage = `data: ${JSON.stringify({ type: 'connected' })}\n\n`;
       controller.enqueue(encoder.encode(initialMessage));
