@@ -14,7 +14,7 @@ Build a web application that displays dynamic text while satisfying two non-nego
 
 ## Solution Overview
 
-This repository contains **two complete implementations** demonstrating different architectural approaches to solve the same challenge:
+This repository contains a **complete implementation** demonstrating a real-time architectural approach to solve the challenge:
 
 ### 🚀 **SSR Solution** (Advanced Real-time)
 - **Server-Side Rendering** with Astro.js framework
@@ -77,7 +77,6 @@ graph TB
 graph TB
     subgraph Client [Client Side]
         MainPage[📄 Main Page<br/>SSE Connection]
-        Demo2[📄 Demo2 Page<br/>Polling Connection]
         AdminPage[📄 Admin Page<br/>SSE + Updates]
     end
     
@@ -98,7 +97,6 @@ graph TB
     end
     
     MainPage --> EventsAPI
-    Demo2 --> TextAPI
     AdminPage --> EventsAPI
     AdminPage --> UpdateAPI
     
@@ -155,7 +153,7 @@ sequenceDiagram
 **Features:**
 - **Real-time updates** using Server-Sent Events
 - **Admin interface** for instant text changes
-- **Multiple demo pages** (SSE, polling, admin)
+- **Multiple pages** (main SSE demo, admin interface)
 - **Persistent storage** with JSON files
 - **Full containerization** on AWS ECS
 
@@ -171,7 +169,7 @@ sequenceDiagram
 
 ## 🏗️ Architecture Comparison
 
-This project demonstrates **two architectural approaches** to achieve the same goal with different trade-offs:
+This project demonstrates a **real-time architectural approach** using Server-Sent Events:
 
 ### 📊 **Solution Comparison Table**
 
@@ -203,23 +201,6 @@ This project demonstrates **two architectural approaches** to achieve the same g
 - **Scaling complexity** - Need to manage connection limits and cleanup
 - **Browser compatibility** - Some older browsers have limitations
 
-### 2. Simple Polling Approach (Demo2 page)
-**Interval-based HTTP requests for comparison**
-
-✅ **Advantages:**
-- **Simple implementation** - Standard `fetch()` in `setInterval()`
-- **No memory management** - Each request is independent
-- **Universal compatibility** - Works in all browsers
-- **Easy debugging** - Standard HTTP requests in dev tools
-- **Predictable load** - Easy to calculate server resource usage
-
-⚠️ **Trade-offs:**
-- **Update delay** - 3 second intervals mean potential 3-second lag
-- **Inefficient** - Makes requests even when no content changes
-- **Higher server load** - Constant requests from all connected clients
-- **Bandwidth overhead** - Regular requests regardless of actual updates
-
-**Note**: This polling approach is included in the SSR solution for **educational comparison** only. The static solution uses a different, more efficient approach with longer polling intervals and CDN caching.
 
 ### Solution Compliance Analysis
 
@@ -391,7 +372,6 @@ challenge-arapar/
     ├── src/                    # Astro.js application
     │   ├── pages/
     │   │   ├── index.astro     # Main SSE demo
-    │   │   ├── demo2.astro     # Polling demo
     │   │   ├── admin.astro     # Admin interface
     │   │   └── api/            # API endpoints
     │   ├── services/

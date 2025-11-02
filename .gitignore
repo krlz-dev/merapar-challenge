@@ -25,3 +25,4 @@ pnpm-debug.log*
 /infra/cdk.out/
 /ssr-solution/infra/cdk.out/
 /static-solution/infra/cdk.out/
+.claude
