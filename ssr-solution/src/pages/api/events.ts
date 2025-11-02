@@ -1,9 +1,11 @@
 import type { APIRoute } from 'astro';
 import fs from 'fs';
 import path from 'path';
-import { sseService } from '@/services/sse-service.ts';
+import { sseService, type SSEClient } from '@/services/sse-service.ts';
 
 export const GET: APIRoute = async () => {
+  let client: SSEClient;
+  
   const stream = new ReadableStream({
     start(controller) {
       const encoder = new TextEncoder();
@@ -19,13 +21,14 @@ export const GET: APIRoute = async () => {
         console.error('Error reading initial text:', error);
       }
 
-      const client = sseService.addClient(controller);
-      
-      return client;
+      client = sseService.addClient(controller);
     },
     
     cancel() {
       console.log('SSE stream cancelled');
+      if (client) {
+        client.cleanup();
+      }
     }
   });
 

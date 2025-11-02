@@ -30,7 +30,7 @@ export class SSRStack extends cdk.Stack {
     });
 
     const repository = new ecr.Repository(this, 'AstroRepository', {
-      repositoryName: 'astro-dynamic-text',
+      repositoryName: 'astro-ssr-dynamic-text',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       imageTagMutability: ecr.TagMutability.MUTABLE,
       imageScanOnPush: true,
@@ -38,7 +38,7 @@ export class SSRStack extends cdk.Stack {
 
     const cluster = new ecs.Cluster(this, 'AstroCluster', {
       vpc,
-      clusterName: 'astro-dynamic-text-cluster',
+      clusterName: 'servicios',
     });
 
     const logGroup = new logs.LogGroup(this, 'AstroLogGroup', {

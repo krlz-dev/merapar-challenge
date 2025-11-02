@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 # Configuration
 AWS_PROFILE=${AWS_PROFILE:-personal}
 AWS_REGION=${AWS_REGION:-us-west-2}
-ECR_REPO_NAME="astro-dynamic-text"
+ECR_REPO_NAME="astro-ssr-dynamic-text"
 
 echo -e "${GREEN}🐳 Building and pushing Docker image for Astro Dynamic Text${NC}"
 
@@ -61,16 +61,24 @@ aws ecr get-login-password --profile $AWS_PROFILE --region $AWS_REGION | docker 
 # Go to application root
 cd ..
 
+# Get version from package.json
+VERSION=$(cat package.json | jq -r '.version' 2>/dev/null || echo "0.0.1")
+echo -e "${GREEN}📦 Application version: $VERSION${NC}"
+
 echo -e "${YELLOW}📋 Step 2: Building Docker image${NC}"
 docker build -t $ECR_REPO_NAME .
 
 echo -e "${YELLOW}📋 Step 3: Tagging image for ECR${NC}"
 docker tag $ECR_REPO_NAME:latest $ECR_URI:latest
+docker tag $ECR_REPO_NAME:latest $ECR_URI:$VERSION
 
 echo -e "${YELLOW}📋 Step 4: Pushing image to ECR${NC}"
 docker push $ECR_URI:latest
+docker push $ECR_URI:$VERSION
 
 echo -e "${GREEN}✅ Docker image built and pushed successfully!${NC}"
-echo -e "${GREEN}🏷️ Image URI: $ECR_URI:latest${NC}"
+echo -e "${GREEN}🏷️ Image URIs:${NC}"
+echo -e "${GREEN}   - Latest: $ECR_URI:latest${NC}"
+echo -e "${GREEN}   - Version: $ECR_URI:$VERSION${NC}"
 
 echo -e "${YELLOW}💡 Next step: Run ./update-ecs.sh to update the ECS service${NC}"

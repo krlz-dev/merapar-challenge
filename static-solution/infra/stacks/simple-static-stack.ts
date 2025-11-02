@@ -68,7 +68,9 @@ export class SimpleStaticStack extends cdk.Stack {
     });
 
     new s3Deploy.BucketDeployment(this, 'SimplestAlternativeDeployment', {
-      sources: [s3Deploy.Source.asset('..')],
+      sources: [s3Deploy.Source.asset('..', {
+        exclude: ['infra/**/*', 'infra']
+      })],
       destinationBucket: websiteBucket,
       distribution: distribution,
       distributionPaths: ['/*'],

@@ -3,6 +3,9 @@
 **Date:** November 2025  
 **Project:** Dynamic Text Challenge
 
+- SSR Solution: https://d206bsqo6g9hij.cloudfront.net
+- Static Solution: https://simplest-alternative-944473419677-us-west-2.s3.us-west-2.amazonaws.com/index.html
+
 ## Challenge Definition
 
 Build a web application that displays dynamic text while satisfying two non-negotiable constraints:
@@ -512,7 +515,7 @@ The challenge proves that **the same functional requirement** can be solved with
 - Theoretical serverless solution analyzed
 
 ✅ **Production deployments available:**
-- SSR Solution: https://d1jk0h2l40omp5.cloudfront.net
+- SSR Solution: https://d206bsqo6g9hij.cloudfront.net
 - Static Solution: https://simplest-alternative-944473419677-us-west-2.s3.us-west-2.amazonaws.com/index.html
 
 ✅ **Complete infrastructure automation:**
