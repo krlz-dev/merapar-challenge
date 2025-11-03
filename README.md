@@ -356,41 +356,6 @@ open index.html
 # Or serve with any static server
 python -m http.server 8000
 ```
-
-## 📁 Project Structure
-
-```
-challenge-arapar/
-├── README.md                    # This file
-├── static-solution/             # Simple, cost-effective approach
-│   ├── index.html              # Static HTML page
-│   ├── config.json             # Dynamic configuration
-│   └── infra/                  # S3 + CloudFront CDK stack
-│       ├── stacks/
-│       │   └── simple-static-stack.ts
-│       └── deploy-simple.sh    # Deployment script
-└── ssr-solution/               # Advanced, real-time approach
-    ├── src/                    # Astro.js application
-    │   ├── pages/
-    │   │   ├── index.astro     # Main SSE demo
-    │   │   ├── admin.astro     # Admin interface
-    │   │   └── api/            # API endpoints
-    │   ├── services/
-    │   │   └── sse-service.ts  # SSE management
-    │   └── data/
-    │       └── text.json       # Persistent storage
-    ├── package.json
-    ├── astro.config.mjs
-    ├── Dockerfile
-    └── infra/                  # ECS + ALB + CloudFront
-        ├── stacks/
-        │   └── ssr-stack.ts
-        ├── deploy.sh           # Main deployment
-        ├── deploy-infra.sh     # Infrastructure only
-        ├── build-push.sh       # Docker build/push
-        └── update-ecs.sh       # Service update
-```
-
 ## 🎮 How Each Solution Works
 
 ### SSR Solution Flow
