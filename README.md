@@ -4,7 +4,7 @@
 **Project:** Dynamic Text Challenge
 
 - SSR Solution: https://d206bsqo6g9hij.cloudfront.net
-- Static Solution: https://simplest-alternative-944473419677-us-west-2.s3.us-west-2.amazonaws.com/index.html
+- Static Solution: https://dpvvtd4bo29tb.cloudfront.net/
 
 ## Challenge Definition
 
@@ -516,7 +516,7 @@ The challenge proves that **the same functional requirement** can be solved with
 
 ✅ **Production deployments available:**
 - SSR Solution: https://d206bsqo6g9hij.cloudfront.net
-- Static Solution: https://simplest-alternative-944473419677-us-west-2.s3.us-west-2.amazonaws.com/index.html
+- Static Solution: https://dpvvtd4bo29tb.cloudfront.net/
 
 ✅ **Complete infrastructure automation:**
 - AWS CDK stacks for both solutions
