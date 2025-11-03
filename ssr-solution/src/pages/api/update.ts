@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ request }) => {
     const data = { dynamicString: text };
     
     fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-    broadcastUpdate(text);
+    await broadcastUpdate(text);
 
     return new Response(JSON.stringify({ success: true, message: 'Text updated successfully' }), {
       status: 200,
