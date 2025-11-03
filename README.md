@@ -151,7 +151,6 @@ sequenceDiagram
 ## 🚀 Live Demos
 
 ### 🔥 SSR Solution (Advanced Real-time)
-**Application URL**: https://d1jk0h2l40omp5.cloudfront.net
 
 **Features:**
 - **Real-time updates** using Server-Sent Events
@@ -161,7 +160,6 @@ sequenceDiagram
 - **Full containerization** on AWS ECS
 
 ### ⚡ Static Solution (Simple & Cost-Effective)
-**Application URL**: https://simplest-alternative-944473419677-us-west-2.s3.us-west-2.amazonaws.com/index.html
 
 **Features:**
 - **Same functionality** - dynamic text without redeploy
